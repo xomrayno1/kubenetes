@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: customer-deployment
+  name: customer-deployment
+spec: # chi tiết triển khai
+  replicas: 2
+  revisionHistoryLimit: 10 #Lưu trữ tối đa 10 phiên bản rollout trước (dùng cho rollback).
+  selector:
+    matchLabels:
+      app: customer-deployment #Dùng để liên kết Deployment với Pod (bằng label app: car-serv-deployment).
+  strategy: #chiến lược deploy
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate # cập nhật từng pod
+  template: # cấu hình pod
+    metadata:
+      labels:
+        app: customer-deployment #gán label tên giống slector
+    spec:
+      containers:
+        - image: amigoscode/kubernetes:customer-v1
+          imagePullPolicy: Always #Luôn kéo image mới mỗi lần tạo pod.
+          name: customer
+          ports:
+            - containerPort: 8080 
+          env:
+            - name: ORDER_SERVICE
+              value: "order-service:9091" # Địa chỉ dịch vụ Order
+
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: customer-node
+spec:
+  selector:
+    app: customer-deployment
+  type: NodePort
+  ports:
+  -  port:  9092
+     targetPort: 8080 #port container
+     nodePort: 30001 #port truy cập từ bên ngoài

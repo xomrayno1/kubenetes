@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: order-deployment
+  name: order-deployment
+spec: # chi tiết triển khai
+  replicas: 2
+  revisionHistoryLimit: 10 #Lưu trữ tối đa 10 phiên bản rollout trước (dùng cho rollback).
+  selector:
+    matchLabels:
+      app: order-deployment #Dùng để liên kết Deployment với Pod (bằng label app: car-serv-deployment).
+  strategy: #chiến lược deploy
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate # cập nhật từng pod
+  template: # cấu hình pod
+    metadata:
+      labels:
+        app: order-deployment #gán label tên giống slector
+    spec:
+      containers:
+        - image: amigoscode/kubernetes:order-v1
+          imagePullPolicy: Always #Luôn kéo image mới mỗi lần tạo pod.
+          name: order
+          ports:
+            - containerPort: 8081 
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: order-service
+spec:
+  selector:
+    app: order-deployment
+  type: ClusterIP
+  ports:
+  -  port:  9091
+     targetPort: 8081 #port container

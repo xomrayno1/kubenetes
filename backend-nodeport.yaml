@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata: # thông tin cơ bản của service
+  name: backend-service # tên service
+  namespace: fullstack
+spec: #chi tiết triển khai
+  externalTrafficPolicy: Cluster #Traffic từ bên ngoài sẽ được load-balancing đến mọi pod trong cluster
+  #, không cần pod nằm trên node nhận request.
+  internalTrafficPolicy: Cluster #Tương tự cho traffic nội bộ – cho phép truy cập pod ở bất kỳ node nào.
+  ipFamilies: # dùng địa chỉ IPv4
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: tcp
+      #cluster ngoài gọi : curl http://<NodeIP>:32080
+      nodePort: 32081 #port phơi ra
+      #service khác gọi http://car-ser-service:80
+      port: 80 #listen to port 80 from service
+      protocol: TCP
+      targetPort: 80 # port container
+  selector:
+    app: backend-deployment #mapping pod
+  sessionAffinity: None
+  type: NodePort

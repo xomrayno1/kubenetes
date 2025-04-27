@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend-deployment
+  name: frontend-deployment
+  namespace: fullstack
+spec: # chi tiết triển khai
+  replicas: 2 #tạo ra 2 pod này
+  revisionHistoryLimit: 10 #Lưu trữ tối đa 10 phiên bản rollout trước (dùng cho rollback).
+  selector:
+    matchLabels:
+      app: frontend-deployment #Dùng để liên kết Deployment với Pod (bằng label app: car-serv-deployment).
+  strategy: #chiến lược deploy
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate # cập nhật từng pod
+  template: # cấu hình pod
+    metadata:
+      labels:
+        app: frontend-deployment #gán label tên giống slector
+      namespace: fullstack #namespace pod
+    spec:
+      containers:
+        - image: tamnc1999/ecommerce-frontend:v1
+          imagePullPolicy: Always #Luôn kéo image mới mỗi lần tạo pod.
+          name: frontend
+          ports:
+            - containerPort: 80 #listen to port 80
+              name: tcp
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: nfs-storage
+          resources:
+            requests: # resource k8s cap ban dau
+              memory: "512mi"
+              cpu: "512"
+            limits: #resource toi da k8s cap
+              memory: "1028mi"
+              cpu: "1"
+      volumes:
+        - name: nfs-storage
+          persistentVolumeClaim:
+            claimName: nfs-pvc

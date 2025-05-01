@@ -47,6 +47,13 @@ spec: # chi tiết triển khai
               value: "order-service:9091" # Địa chỉ dịch vụ Order
             - name: "KILL_IN_SECONDS"
               value: "30"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "256Mi"
 ---
 kind: Service
 apiVersion: v1

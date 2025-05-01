@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-backup-job
+spec:
+  ttlSecondsAfterFinished: 60 # sau 60 giây kể từ khi Job hoàn thành (hoặc thất bại), Kubernetes sẽ xóa Job và Pod liên quan.
+  template:
+    spec:
+      containers:
+      - name: backup
+        image: mysql:8
+        env:
+        - name: MYSQL_PWD
+          value: my-secret-password
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            timestamp=$(date +%Y-%m-%d_%H-%M-%S) && \
+            echo "Backing up database at $timestamp" && \
+            mysqldump -h mysql -u root mydatabase > /backup/backup-$timestamp.sql && \
+            echo "Done"
+        volumeMounts:
+        - name: db-storage
+          mountPath: /backup
+      restartPolicy: Never
+      volumes:
+      - name: db-storage
+        persistentVolumeClaim:
+          claimName: db-storage-pvc

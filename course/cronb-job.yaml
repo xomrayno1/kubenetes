@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob #dùng để chạy định kì, như backup, xóa log,
+metadata:
+  name: mysql-backup-cronjob
+spec:
+  #schedule: "0 12 * * *"        # Mỗi ngày lúc 12:00
+  schedule: "* * * * *" # Mỗi phút
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: busybox
+            command: ["/bin/sh", "-c"]
+            args:
+              - "echo 'Backing up database...' && sleep 20  "
+          restartPolicy: Never

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: empty-dir
+  name: empty-dir
+spec:
+  selector:
+    matchLabels:
+      name:  empty-dir
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name:  empty-dir
+    spec:
+      volumes: #Tao volume cho pod
+        - name:  cache
+          emptyDir: {} #share volume cho cac container trong cung`  1 pod
+      containers:
+      - image:  busybox
+        name:  one
+        command:
+          - "/bin/sh"
+        args:
+          - "-c"
+          - "touch /foo/bar.txt && sleep 3600"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "128Mi"
+        volumeMounts: #mount volume vao
+        - mountPath:  /foo
+          name:  cache
+      - image:  busybox
+        name:  two
+        command:
+          - "sleep"
+          - "3600"  
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "128Mi"
+        volumeMounts: #mount volume vao
+        - mountPath:  /foo 
+          name:  cache          

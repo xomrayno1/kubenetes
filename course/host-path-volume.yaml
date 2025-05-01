@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: host-path
+  name: host-path
+spec:
+  selector:
+    matchLabels:
+      name:  host-path
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: host-path
+    spec:
+      volumes: #Tao volume cho pod
+        - name:  hostpath
+          hostPath: #mount folder path từ host vào trong pod
+            path: /var/log #vị trí ở host
+      containers:
+      - image:  busybox
+        name:  one
+        command:
+          - "sleep"
+          - "3600"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "128Mi"
+        volumeMounts: #mount volume vao
+          - name:  hostpath   
+            mountPath:  /var/log #vị trí trong container

@@ -24,13 +24,29 @@ spec: # chi tiết triển khai
         - image: amigoscode/kubernetes:customer-v1
           imagePullPolicy: Always #Luôn kéo image mới mỗi lần tạo pod.
           name: customer
+          livenessProbe: #health check
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5 #thời gian delay đầu tiên
+            timeoutSeconds: 5 #thời gian timeout
+            failureThreshold: 3 #số lần thất bại trước khi đánh dấu pod là không sống được
+            periodSeconds: 5 #thời gian giữa các lần kiểm tra
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10 #thời gian delay đầu tiên
+            timeoutSeconds: 5 #thời gian timeout
+            failureThreshold: 3 #số lần thất bại trước khi đánh dấu pod là không sống được
+            periodSeconds: 5 #thời gian giữa các lần kiểm tra            
           ports:
             - containerPort: 8080 
           env:
             - name: ORDER_SERVICE
               value: "order-service:9091" # Địa chỉ dịch vụ Order
-
-
+            - name: "KILL_IN_SECONDS"
+              value: "30"
 ---
 kind: Service
 apiVersion: v1
